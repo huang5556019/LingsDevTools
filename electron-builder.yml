@@ -1,0 +1,23 @@
+appId: com.devtools.app
+productName: DevTools
+copyright: Copyright © 2024 DevTools
+
+win:
+  target: nsis
+  icon: resources/icons/app.ico
+
+mac:
+  target: dmg
+  icon: resources/icons/app.icns
+  category: public.app-category.developer-tools
+
+directories:
+  output: dist/build
+  buildResources: resources
+
+files:
+  - dist/**/*
+  - package.json
+
+extraResources:
+  - resources/**/*

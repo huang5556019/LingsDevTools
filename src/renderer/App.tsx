@@ -1,0 +1,63 @@
+import React, { useEffect, useState } from 'react'
+import Layout from './components/Layout'
+import ToolContainer from './components/ToolContainer'
+import { useAppStore, ToolType } from './store'
+
+interface ToolInfo {
+  id: ToolType
+  name: string
+  description: string
+}
+
+const toolInfo: Record<ToolType, ToolInfo> = {
+  'base64': { id: 'base64', name: 'Base64 编码解码', description: 'Base64 编码和解码工具' },
+  'url-encode': { id: 'url-encode', name: 'URL 编码', description: 'URL 编码和解码工具' },
+  'json-format': { id: 'json-format', name: 'JSON 格式化', description: 'JSON 格式化和压缩工具' },
+  'http-request': { id: 'http-request', name: 'HTTP 请求', description: 'HTTP 请求测试工具' },
+  'websocket-debug': { id: 'websocket-debug', name: 'WebSocket 调试', description: 'WebSocket 连接调试工具' },
+  'timestamp': { id: 'timestamp', name: '时间戳转换', description: '时间戳和日期时间转换工具' },
+  'regex': { id: 'regex', name: '正则表达式', description: '正则表达式测试工具' },
+  'history': { id: 'history', name: '历史记录管理', description: '查看和管理工具使用历史记录' },
+}
+
+function App() {
+  const [pingResult, setPingResult] = useState('')
+  const { currentTool } = useAppStore()
+  const currentToolInfo = toolInfo[currentTool]
+
+  useEffect(() => {
+    window.electronAPI.ping().then(setPingResult)
+  }, [])
+
+  return (
+    <Layout>
+      <ToolContainer 
+        title={currentToolInfo.name} 
+        description={currentToolInfo.description}
+      >
+        <div className="space-y-6">
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded">
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">欢迎使用 {currentToolInfo.name}</h3>
+            <p className="text-blue-700">{currentToolInfo.description}</p>
+          </div>
+          
+          <div className="bg-gray-100 p-4 rounded">
+            <h3 className="text-lg font-semibold mb-2">系统状态</h3>
+            <div className="space-y-2">
+              <p>IPC 通信: <span className="font-medium text-green-600">{pingResult === 'pong' ? '正常' : '连接中...'}</span></p>
+              <p>当前工具: <span className="font-medium">{currentToolInfo.name}</span></p>
+            </div>
+          </div>
+          
+          <div className="text-center py-8 text-gray-500">
+            <p className="text-lg">此工具功能正在开发中...</p>
+            <p className="mt-2 text-sm">请关注后续更新</p>
+          </div>
+        </div>
+      </ToolContainer>
+    </Layout>
+  )
+}
+
+export default App
+
