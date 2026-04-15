@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useEncoderStore } from '../../store/encoderStore';
+import { useEncoderStore } from '../../../store/encoderStore';
 import { urlEncode, urlDecode } from '../utils/url';
 
 const UrlTool: React.FC = () => {
-  const { toolStates, setToolState, getToolState } = useEncoderStore();
+  const { setToolState, getToolState } = useEncoderStore();
   const toolState = getToolState('url');
   const [input, setInput] = useState(toolState.input);
   const [output, setOutput] = useState(toolState.output);

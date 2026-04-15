@@ -5,6 +5,7 @@ import { useAppStore, ToolType } from './store'
 import { Base64Tool, UrlTool, JsonTool, useEncoderStore } from './modules/encoder'
 import { TimestampTool, RegexTool, useDataStore } from './modules/data'
 import { HttpTool, WebSocketTool } from './modules/network'
+import HistoryTool from './modules/history'
 import { useNetworkStore } from './store/networkStore'
 
 interface ToolInfo {
@@ -75,6 +76,8 @@ function App() {
         return <TimestampTool />
       case 'regex':
         return <RegexTool />
+      case 'history':
+        return <HistoryTool />
       default:
         return (
           <div className="text-center py-8 text-gray-500">

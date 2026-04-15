@@ -1,9 +1,11 @@
 import React from 'react';
 import { useNetworkStore } from '../../../store/networkStore';
+import { useHistoryStore } from '../../../store';
 import { sendHttpRequest } from '../utils/http';
 
 const HttpTool: React.FC = () => {
   const { httpTool, updateHttpTool, addHttpHeader, removeHttpHeader } = useNetworkStore();
+  const { saveHistory } = useHistoryStore();
 
   const handleSend = async () => {
     if (!httpTool.url.trim()) {
@@ -23,6 +25,24 @@ const HttpTool: React.FC = () => {
       });
 
       updateHttpTool({ response, loading: false });
+
+      const inputData = {
+        url: httpTool.url,
+        method: httpTool.method,
+        headers: httpTool.headers,
+        body: httpTool.body,
+        bodyType: httpTool.bodyType,
+      };
+
+      const outputData = typeof response.data === 'object'
+        ? JSON.stringify(response.data)
+        : String(response.data || '');
+
+      await saveHistory({
+        tool_type: 'http',
+        input: JSON.stringify(inputData),
+        output: outputData,
+      });
     } catch (error) {
       updateHttpTool({ error: (error as Error).message, loading: false });
     }

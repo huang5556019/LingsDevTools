@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useEncoderStore } from '../../store/encoderStore';
+import { useEncoderStore } from '../../../store/encoderStore';
 import { base64Encode, base64Decode } from '../utils/base64';
 
 const Base64Tool: React.FC = () => {
-  const { toolStates, setToolState, getToolState } = useEncoderStore();
+  const { setToolState, getToolState } = useEncoderStore();
   const toolState = getToolState('base64');
   const [input, setInput] = useState(toolState.input);
   const [output, setOutput] = useState(toolState.output);

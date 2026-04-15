@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useEncoderStore } from '../../store/encoderStore';
+import { useEncoderStore } from '../../../store/encoderStore';
 import { jsonFormat, jsonCompress } from '../utils/json';
 
 const JsonTool: React.FC = () => {
-  const { toolStates, setToolState, getToolState } = useEncoderStore();
+  const { setToolState, getToolState } = useEncoderStore();
   const toolState = getToolState('json');
   const [input, setInput] = useState(toolState.input);
   const [output, setOutput] = useState(toolState.output);

@@ -16,8 +16,9 @@ directories:
   buildResources: resources
 
 files:
-  - dist/**/*
+  - out/**/*
   - package.json
+  - index.html
 
 extraResources:
   - resources/**/*
