@@ -1,25 +1,82 @@
 appId: com.devtools.app
 productName: DevTools
-copyright: Copyright © 2024 DevTools
+copyright: Copyright © 2026 DevTools
 
+# 构建目标
+target:
+  - target: nsis
+    arch:
+      - x64
+  - target: dmg
+    arch:
+      - x64
+      - arm64
+
+# Windows 配置
 win:
   target: nsis
   icon: resources/icons/app.ico
+  publisherName: DevTools Team
+  legalTrademarks: DevTools
+  artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 
+# macOS 配置
 mac:
   target: dmg
   icon: resources/icons/app.icns
   category: public.app-category.developer-tools
   identity: null
+  artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+  minimumSystemVersion: '10.15'
 
+# 目录配置
 directories:
   output: dist/build
   buildResources: resources
 
+# 文件配置
 files:
   - out/**/*
   - package.json
   - index.html
 
+# 额外资源
 extraResources:
   - resources/**/*
+
+# NSIS 安装器配置
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  installerIcon: resources/icons/app.ico
+  uninstallerIcon: resources/icons/app.ico
+  installerHeaderIcon: resources/icons/app.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: DevTools
+  include: build/installer.nsh
+
+# DMG 配置
+dmg:
+  contents:
+    - x: 410
+      y: 150
+      type: link
+      path: /Applications
+    - x: 130
+      y: 150
+      type: file
+  window:
+    width: 540
+    height: 380
+  icon: resources/icons/app.icns
+
+# 发布配置
+publish:
+  provider: github
+  releaseType: release
+  draft: false
+  prerelease: false
+  forcePublish: false

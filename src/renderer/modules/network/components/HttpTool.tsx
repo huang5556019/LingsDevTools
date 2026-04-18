@@ -2,6 +2,7 @@ import React from 'react';
 import { useNetworkStore } from '../../../store/networkStore';
 import { useHistoryStore } from '../../../store';
 import { sendHttpRequest } from '../utils/http';
+import ErrorMessage from '../../../components/ErrorMessage';
 
 const HttpTool: React.FC = () => {
   const { httpTool, updateHttpTool, addHttpHeader, removeHttpHeader } = useNetworkStore();
@@ -80,7 +81,7 @@ const HttpTool: React.FC = () => {
             type="text"
             value={httpTool.url}
             onChange={(e) => updateHttpTool({ url: e.target.value })}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="请输入请求 URL"
           />
         </div>
@@ -89,7 +90,7 @@ const HttpTool: React.FC = () => {
           <select
             value={httpTool.method}
             onChange={(e) => updateHttpTool({ method: e.target.value })}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           >
             <option value="GET">GET</option>
             <option value="POST">POST</option>
@@ -106,11 +107,11 @@ const HttpTool: React.FC = () => {
         <div className="flex justify-between items-center mb-2">
           <label className="font-medium">请求头</label>
           <button
-            onClick={addHttpHeader}
-            className="px-2 py-1 bg-gray-200 rounded text-sm"
-          >
-            添加
-          </button>
+                onClick={addHttpHeader}
+                className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
+              >
+                添加
+              </button>
         </div>
         {httpTool.headers.map((header, index) => (
           <div key={index} className="flex gap-2 mb-2">
@@ -122,7 +123,7 @@ const HttpTool: React.FC = () => {
                 newHeaders[index].key = e.target.value;
                 updateHttpTool({ headers: newHeaders });
               }}
-              className="flex-1 p-2 border rounded"
+              className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               placeholder="Key"
             />
             <input
@@ -133,12 +134,12 @@ const HttpTool: React.FC = () => {
                 newHeaders[index].value = e.target.value;
                 updateHttpTool({ headers: newHeaders });
               }}
-              className="flex-1 p-2 border rounded"
+              className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               placeholder="Value"
             />
             <button
               onClick={() => removeHttpHeader(index)}
-              className="px-2 py-1 bg-red-100 text-red-600 rounded"
+              className="px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
             >
               删除
             </button>
@@ -153,7 +154,7 @@ const HttpTool: React.FC = () => {
             <select
               value={httpTool.bodyType}
               onChange={(e) => updateHttpTool({ bodyType: e.target.value as 'json' | 'form' | 'text' })}
-              className="p-1 border rounded text-sm"
+              className="p-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             >
               <option value="json">JSON</option>
               <option value="form">表单数据</option>
@@ -163,7 +164,7 @@ const HttpTool: React.FC = () => {
           <textarea
             value={httpTool.body}
             onChange={(e) => updateHttpTool({ body: e.target.value })}
-            className="w-full p-2 border rounded h-32"
+            className="w-full p-2 border border-gray-300 rounded-md h-32 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder={httpTool.bodyType === 'json' ? '{"key": "value"}' : httpTool.bodyType === 'form' ? 'key1=value1&key2=value2' : '请输入文本'}
           />
         </div>
@@ -171,16 +172,23 @@ const HttpTool: React.FC = () => {
 
       <button
         onClick={handleSend}
-        className="px-4 py-2 bg-blue-600 text-white rounded mb-4"
+        className="px-4 py-2 bg-blue-600 text-white rounded mb-4 flex items-center gap-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         disabled={httpTool.loading}
       >
+        {httpTool.loading && (
+          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        )}
         {httpTool.loading ? '发送中...' : '发送请求'}
       </button>
 
       {httpTool.error && (
-        <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
-          {httpTool.error}
-        </div>
+        <ErrorMessage
+          message={httpTool.error}
+          onClose={() => updateHttpTool({ error: '' })}
+        />
       )}
 
       {httpTool.response.status && (
@@ -214,13 +222,13 @@ const HttpTool: React.FC = () => {
         <div className="flex space-x-2">
           <button
             onClick={handleCopy}
-            className="px-4 py-2 bg-green-600 text-white rounded"
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
           >
             复制结果
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-gray-600 text-white rounded"
+            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
           >
             保存到历史
           </button>

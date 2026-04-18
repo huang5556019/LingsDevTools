@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Layout from './components/Layout'
 import ToolContainer from './components/ToolContainer'
 import { useAppStore, ToolType } from './store'
@@ -71,7 +71,7 @@ function App() {
     }
   }, [currentTool, setEncoderTool, setDataTool, setNetworkTool])
 
-  const renderToolComponent = () => {
+  const renderToolComponent = useCallback(() => {
     switch (currentTool) {
       case 'base64':
         return <Base64Tool />
@@ -97,7 +97,7 @@ function App() {
           </div>
         )
     }
-  }
+  }, [currentTool])
 
   return (
     <Layout>
@@ -126,5 +126,7 @@ function App() {
   )
 }
 
-export default App
+const AppMemo = React.memo(App)
+
+export default AppMemo
 

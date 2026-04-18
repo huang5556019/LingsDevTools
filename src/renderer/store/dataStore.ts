@@ -15,7 +15,8 @@ export const useDataStore = create<DataToolState>((set, get) => ({
       input: '',
       output: '',
       operation: 'timestampToDate',
-      format: 'YYYY-MM-DD HH:mm:ss'
+      format: 'YYYY-MM-DD HH:mm:ss',
+      error: ''
     },
     regex: {
       pattern: '',
@@ -23,7 +24,8 @@ export const useDataStore = create<DataToolState>((set, get) => ({
       replacement: '',
       flags: 'g',
       matches: [],
-      result: ''
+      result: '',
+      error: ''
     }
   },
   setCurrentTool: (tool) => set({ currentTool: tool }),

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useDataStore } from '../../../store/dataStore';
 import { timestampToDate, dateToTimestamp } from '../utils/timestamp';
+import ErrorMessage from '../../../components/ErrorMessage';
 
 const TimestampTool: React.FC = () => {
   const { toolStates, setToolState } = useDataStore();
-  const { input, output, operation, format } = toolStates.timestamp;
-
-  const [error, setError] = useState<string>('');
+  const { input, output, operation, format, error } = toolStates.timestamp;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setToolState('timestamp', { input: e.target.value });
@@ -20,9 +19,15 @@ const TimestampTool: React.FC = () => {
     setToolState('timestamp', { format: e.target.value });
   };
 
-  const handleConvert = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleConvert = async () => {
     try {
-      setError('');
+      setToolState('timestamp', { error: '' });
+      setLoading(true);
+      // 模拟处理延迟
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       let result = '';
 
       if (operation === 'timestampToDate') {
@@ -34,7 +39,10 @@ const TimestampTool: React.FC = () => {
 
       setToolState('timestamp', { output: result });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setToolState('timestamp', { error: errorMessage });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,17 +103,25 @@ const TimestampTool: React.FC = () => {
 
       <div>
         <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
           onClick={handleConvert}
+          disabled={loading}
         >
+          {loading && (
+            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          )}
           Convert
         </button>
       </div>
 
       {error && (
-        <div className="p-2 bg-red-100 text-red-700 rounded-md">
-          {error}
-        </div>
+        <ErrorMessage
+          message={error}
+          onClose={() => setToolState('timestamp', { error: '' })}
+        />
       )}
 
       <div>

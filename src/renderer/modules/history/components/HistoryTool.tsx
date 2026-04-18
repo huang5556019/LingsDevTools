@@ -5,6 +5,7 @@ import { useAppStore, ToolType } from '../../../store'
 import { useNetworkStore } from '../../../store/networkStore'
 import { useDataStore } from '../../../store/dataStore'
 import { useEncoderStore } from '../../../store/encoderStore'
+import ErrorMessage from '../../../components/ErrorMessage'
 
 const HistoryTool: React.FC = () => {
   const {
@@ -195,8 +196,11 @@ const HistoryTool: React.FC = () => {
             )}
 
             {error && (
-              <div className="flex items-center justify-center h-32">
-                <div className="text-red-500">{error}</div>
+              <div className="p-4">
+                <ErrorMessage
+                  message={error}
+                  onClose={() => {}}
+                />
               </div>
             )}
 
@@ -260,8 +264,11 @@ const HistoryTool: React.FC = () => {
           )}
 
           {error && (
-            <div className="flex items-center justify-center h-32">
-              <div className="text-red-500">{error}</div>
+            <div className="p-4">
+              <ErrorMessage
+                message={error}
+                onClose={() => {}}
+              />
             </div>
           )}
 

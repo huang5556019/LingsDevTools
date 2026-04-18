@@ -7,8 +7,6 @@ let mainWindow: BrowserWindow | null = null
 
 function createWindow() {
   try {
-    initDatabase()
-    
     mainWindow = new BrowserWindow({
       width: 1000,
       height: 700,
@@ -19,6 +17,8 @@ function createWindow() {
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: false,
+        // 启用预加载以提高性能
+        backgroundThrottling: false,
       },
     })
 
@@ -28,6 +28,15 @@ function createWindow() {
     } else {
       mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'))
     }
+
+    // 窗口创建后异步初始化数据库
+    setTimeout(() => {
+      try {
+        initDatabase()
+      } catch (error) {
+        console.error('数据库初始化失败:', error)
+      }
+    }, 1000)
 
     mainWindow.on('closed', () => {
       mainWindow = null

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useNetworkStore } from '../../../store/networkStore';
 import { webSocketClient } from '../utils/websocket';
+import ErrorMessage from '../../../components/ErrorMessage';
 
 const WebSocketTool: React.FC = () => {
   const { webSocketTool, updateWebSocketTool, addWebSocketMessage, clearWebSocketMessages } = useNetworkStore();
@@ -107,13 +108,13 @@ const WebSocketTool: React.FC = () => {
             type="text"
             value={webSocketTool.url}
             onChange={(e) => updateWebSocketTool({ url: e.target.value })}
-            className="flex-1 p-2 border rounded"
+            className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="请输入 WebSocket URL (ws:// 或 wss://)"
           />
           {webSocketTool.status === 'disconnected' && (
             <button
               onClick={handleConnect}
-              className="px-4 py-2 bg-blue-600 text-white rounded"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
             >
               连接
             </button>
@@ -121,7 +122,7 @@ const WebSocketTool: React.FC = () => {
           {(webSocketTool.status === 'connecting' || webSocketTool.status === 'connected') && (
             <button
               onClick={handleDisconnect}
-              className="px-4 py-2 bg-red-600 text-white rounded"
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
             >
               断开
             </button>
@@ -142,9 +143,10 @@ const WebSocketTool: React.FC = () => {
       </div>
 
       {webSocketTool.error && (
-        <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
-          {webSocketTool.error}
-        </div>
+        <ErrorMessage
+          message={webSocketTool.error}
+          onClose={() => updateWebSocketTool({ error: '' })}
+        />
       )}
 
       <div className="mb-4">
@@ -179,7 +181,7 @@ const WebSocketTool: React.FC = () => {
         <select
           value={webSocketTool.messageType}
           onChange={(e) => updateWebSocketTool({ messageType: e.target.value as 'text' | 'json' })}
-          className="p-2 border rounded"
+          className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
         >
           <option value="text">纯文本</option>
           <option value="json">JSON</option>
@@ -189,12 +191,12 @@ const WebSocketTool: React.FC = () => {
           value={webSocketTool.messageInput}
           onChange={(e) => updateWebSocketTool({ messageInput: e.target.value })}
           onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          className="flex-1 p-2 border rounded"
+          className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           placeholder={webSocketTool.messageType === 'json' ? '{"key": "value"}' : '请输入消息'}
         />
         <button
           onClick={handleSend}
-          className="px-4 py-2 bg-blue-600 text-white rounded"
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={webSocketTool.status !== 'connected'}
         >
           发送
@@ -204,7 +206,7 @@ const WebSocketTool: React.FC = () => {
       <div className="mt-4 flex justify-end">
         <button
           onClick={clearWebSocketMessages}
-          className="px-4 py-2 bg-gray-200 text-gray-800 rounded"
+          className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
         >
           清空消息
         </button>
