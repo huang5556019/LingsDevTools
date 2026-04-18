@@ -10,7 +10,6 @@ target:
   - target: dmg
     arch:
       - x64
-      - arm64
 
 # Windows 配置
 win:
@@ -73,10 +72,4 @@ dmg:
     height: 380
   icon: resources/icons/app.icns
 
-# 发布配置
-publish:
-  provider: github
-  releaseType: release
-  draft: false
-  prerelease: false
-  forcePublish: false
+
