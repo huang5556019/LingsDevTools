@@ -212,8 +212,8 @@ DevTools/
 
 如有任何问题或建议，请联系我们：
 
-- 邮箱：support@devtools.com
-- GitHub：https://github.com/devtools/app
+- 邮箱：xthuang5556019@outlook.com
+- GitHub：https://github.com/huang5556019/LingsDevTools
 
 ## 更新日志
 
