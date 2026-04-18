@@ -10,6 +10,7 @@ mac:
   target: dmg
   icon: resources/icons/app.icns
   category: public.app-category.developer-tools
+  identity: null
 
 directories:
   output: dist/build

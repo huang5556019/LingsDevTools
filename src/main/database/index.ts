@@ -1,105 +1,102 @@
-import Database from 'better-sqlite3'
-import path from 'path'
+import Store from 'electron-store'
 import { app } from 'electron'
 import { mainWindow } from '../index.js'
 
 interface HistoryRecord {
-  id?: number
+  id: number
   tool_type: string
   input: string
   output: string
-  created_at?: string
+  created_at: string
 }
 
 interface FavoriteRecord {
-  id?: number
+  id: number
   tool_type: string
   name: string
   data: string
-  created_at?: string
+  created_at: string
 }
 
-let db: Database.Database | null = null
+interface StoreSchema {
+  history: HistoryRecord[]
+  favorites: FavoriteRecord[]
+  historyCounter: number
+  favoritesCounter: number
+}
 
-export function getDatabase(): Database.Database {
-  if (!db) {
+let store: Store<StoreSchema> | null = null
+
+export function getStore(): Store<StoreSchema> {
+  if (!store) {
     throw new Error('数据库未初始化')
   }
-  return db
+  return store
 }
 
-export function initDatabase(): boolean {
+export function initDatabase(): { success: boolean; error?: string } {
   try {
-    const userDataPath = app.getPath('userData')
-    const dbPath = path.join(userDataPath, 'devtools.db')
-    
-    console.log('数据库路径:', dbPath)
-    
-    db = new Database(dbPath)
-    db.pragma('journal_mode = WAL')
-    
-    createTables()
-    
+    if (store) {
+      console.log('数据库已初始化')
+      return { success: true }
+    }
+
+    store = new Store<StoreSchema>({
+      name: 'devtools-data',
+      defaults: {
+        history: [],
+        favorites: [],
+        historyCounter: 0,
+        favoritesCounter: 0,
+      },
+    })
+
     console.log('数据库初始化成功')
-    return true
+    console.log('数据库路径:', store.path)
+    return { success: true }
   } catch (error) {
-    console.error('数据库初始化失败:', error)
-    
+    const errorMessage = error instanceof Error ? error.message : '未知错误'
+    const errorStack = error instanceof Error ? error.stack : ''
+    console.error('数据库初始化失败:', errorMessage, errorStack)
+
     if (mainWindow) {
-      mainWindow.webContents.send('db:error', 
-        `数据库初始化失败: ${error instanceof Error ? error.message : '未知错误'}`
+      mainWindow.webContents.send('db:error',
+        `数据库初始化失败: ${errorMessage}\n${errorStack}`
       )
     }
-    
-    return false
-  }
-}
 
-function createTables() {
-  const db = getDatabase()
-  
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tool_type TEXT NOT NULL,
-      input TEXT NOT NULL,
-      output TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-  
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS favorites (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tool_type TEXT NOT NULL,
-      name TEXT NOT NULL,
-      data TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-  
-  db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_history_created_at ON history (created_at DESC)
-  `)
-  
-  console.log('数据表创建成功')
+    return { success: false, error: errorMessage }
+  }
 }
 
 const HISTORY_LIMIT = 1000
 
-export function saveHistory(record: HistoryRecord): { success: boolean; id?: number; error?: string } {
+export function saveHistory(record: Omit<HistoryRecord, 'id' | 'created_at'>): { success: boolean; id?: number; error?: string } {
   try {
-    const db = getDatabase()
-    
-    const countResult = db.prepare('SELECT COUNT(*) as count FROM history').get() as { count: number }
-    if (countResult.count >= HISTORY_LIMIT) {
-      db.prepare('DELETE FROM history WHERE id IN (SELECT id FROM history ORDER BY created_at ASC LIMIT 1)').run()
+    console.log('saveHistory 被调用:', record)
+    const store = getStore()
+    const history = store.get('history', [])
+    const counter = store.get('historyCounter', 0)
+    console.log('当前历史记录数量:', history.length)
+
+    if (history.length >= HISTORY_LIMIT) {
+      history.shift()
     }
-    
-    const stmt = db.prepare('INSERT INTO history (tool_type, input, output) VALUES (?, ?, ?)')
-    const result = stmt.run(record.tool_type, record.input, record.output)
-    
-    return { success: true, id: result.lastInsertRowid as number }
+
+    const newRecord: HistoryRecord = {
+      id: counter + 1,
+      tool_type: record.tool_type,
+      input: record.input,
+      output: record.output,
+      created_at: new Date().toISOString(),
+    }
+
+    history.push(newRecord)
+    store.set('history', history)
+    store.set('historyCounter', counter + 1)
+    console.log('保存后的历史记录数量:', history.length)
+
+    return { success: true, id: newRecord.id }
   } catch (error) {
     console.error('保存历史记录失败:', error)
     return { success: false, error: error instanceof Error ? error.message : '未知错误' }
@@ -108,24 +105,21 @@ export function saveHistory(record: HistoryRecord): { success: boolean; id?: num
 
 export function getAllHistory(limit?: number, offset?: number): { success: boolean; data: HistoryRecord[]; error?: string } {
   try {
-    const db = getDatabase()
-    let query = 'SELECT * FROM history ORDER BY created_at DESC'
-    const params: any[] = []
-    
-    if (limit !== undefined) {
-      query += ' LIMIT ?'
-      params.push(limit)
-      
-      if (offset !== undefined) {
-        query += ' OFFSET ?'
-        params.push(offset)
-      }
+    console.log('getAllHistory 被调用, limit:', limit, 'offset:', offset)
+    const store = getStore()
+    let history = store.get('history', [])
+    console.log('从 store 获取的历史记录数量:', history.length)
+
+    history = history.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+    if (offset !== undefined && limit !== undefined) {
+      history = history.slice(offset, offset + limit)
+    } else if (limit !== undefined) {
+      history = history.slice(0, limit)
     }
-    
-    const stmt = db.prepare(query)
-    const data = stmt.all(...params) as HistoryRecord[]
-    
-    return { success: true, data }
+    console.log('返回的历史记录数量:', history.length)
+
+    return { success: true, data: history }
   } catch (error) {
     console.error('获取历史记录失败:', error)
     return { success: false, data: [], error: error instanceof Error ? error.message : '未知错误' }
@@ -134,11 +128,11 @@ export function getAllHistory(limit?: number, offset?: number): { success: boole
 
 export function deleteHistory(ids: number[]): { success: boolean; error?: string } {
   try {
-    const db = getDatabase()
-    const placeholders = ids.map(() => '?').join(',')
-    const stmt = db.prepare(`DELETE FROM history WHERE id IN (${placeholders})`)
-    stmt.run(...ids)
-    
+    const store = getStore()
+    const history = store.get('history', [])
+    const filteredHistory = history.filter(item => !ids.includes(item.id))
+    store.set('history', filteredHistory)
+
     return { success: true }
   } catch (error) {
     console.error('删除历史记录失败:', error)
@@ -148,9 +142,9 @@ export function deleteHistory(ids: number[]): { success: boolean; error?: string
 
 export function clearHistory(): { success: boolean; error?: string } {
   try {
-    const db = getDatabase()
-    db.prepare('DELETE FROM history').run()
-    
+    const store = getStore()
+    store.set('history', [])
+
     return { success: true }
   } catch (error) {
     console.error('清空历史记录失败:', error)
@@ -158,13 +152,25 @@ export function clearHistory(): { success: boolean; error?: string } {
   }
 }
 
-export function saveFavorite(record: FavoriteRecord): { success: boolean; id?: number; error?: string } {
+export function saveFavorite(record: Omit<FavoriteRecord, 'id' | 'created_at'>): { success: boolean; id?: number; error?: string } {
   try {
-    const db = getDatabase()
-    const stmt = db.prepare('INSERT INTO favorites (tool_type, name, data) VALUES (?, ?, ?)')
-    const result = stmt.run(record.tool_type, record.name, record.data)
-    
-    return { success: true, id: result.lastInsertRowid as number }
+    const store = getStore()
+    const favorites = store.get('favorites', [])
+    const counter = store.get('favoritesCounter', 0)
+
+    const newRecord: FavoriteRecord = {
+      id: counter + 1,
+      tool_type: record.tool_type,
+      name: record.name,
+      data: record.data,
+      created_at: new Date().toISOString(),
+    }
+
+    favorites.push(newRecord)
+    store.set('favorites', favorites)
+    store.set('favoritesCounter', counter + 1)
+
+    return { success: true, id: newRecord.id }
   } catch (error) {
     console.error('保存收藏失败:', error)
     return { success: false, error: error instanceof Error ? error.message : '未知错误' }
@@ -173,19 +179,16 @@ export function saveFavorite(record: FavoriteRecord): { success: boolean; id?: n
 
 export function getAllFavorites(toolType?: string): { success: boolean; data: FavoriteRecord[]; error?: string } {
   try {
-    const db = getDatabase()
-    let query = 'SELECT * FROM favorites ORDER BY created_at DESC'
-    const params: any[] = []
-    
+    const store = getStore()
+    let favorites = store.get('favorites', [])
+
+    favorites = favorites.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
     if (toolType) {
-      query += ' WHERE tool_type = ?'
-      params.push(toolType)
+      favorites = favorites.filter(item => item.tool_type === toolType)
     }
-    
-    const stmt = db.prepare(query)
-    const data = stmt.all(...params) as FavoriteRecord[]
-    
-    return { success: true, data }
+
+    return { success: true, data: favorites }
   } catch (error) {
     console.error('获取收藏失败:', error)
     return { success: false, data: [], error: error instanceof Error ? error.message : '未知错误' }
@@ -194,15 +197,14 @@ export function getAllFavorites(toolType?: string): { success: boolean; data: Fa
 
 export function deleteFavorite(id: number): { success: boolean; error?: string } {
   try {
-    const db = getDatabase()
-    const stmt = db.prepare('DELETE FROM favorites WHERE id = ?')
-    stmt.run(id)
-    
+    const store = getStore()
+    const favorites = store.get('favorites', [])
+    const filteredFavorites = favorites.filter(item => item.id !== id)
+    store.set('favorites', filteredFavorites)
+
     return { success: true }
   } catch (error) {
     console.error('删除收藏失败:', error)
     return { success: false, error: error instanceof Error ? error.message : '未知错误' }
   }
 }
-
-export { db }

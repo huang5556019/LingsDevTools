@@ -3,7 +3,8 @@ import Layout from './components/Layout'
 import ToolContainer from './components/ToolContainer'
 import { useAppStore, ToolType } from './store'
 import { Base64Tool, UrlTool, JsonTool, useEncoderStore } from './modules/encoder'
-import { TimestampTool, RegexTool, useDataStore } from './modules/data'
+import { TimestampTool, RegexTool } from './modules/data'
+import { useDataStore } from './store/dataStore'
 import { HttpTool, WebSocketTool } from './modules/network'
 import HistoryTool from './modules/history'
 import { useNetworkStore } from './store/networkStore'
@@ -35,6 +36,16 @@ function App() {
 
   useEffect(() => {
     window.electronAPI.ping().then(setPingResult)
+    window.electronAPI.initDatabase().then((result) => {
+      if (result.success) {
+        console.log('数据库初始化:成功')
+      } else {
+        console.error('数据库初始化:失败', result.error)
+      }
+    })
+    window.electronAPI.onDatabaseError((_event, error) => {
+      console.error('数据库错误:', error)
+    })
   }, [])
 
   useEffect(() => {

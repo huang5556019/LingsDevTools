@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron'
+import { initDatabase, saveHistory, getAllHistory, deleteHistory, clearHistory, saveFavorite, getAllFavorites, deleteFavorite } from '../database/index.js'
 
 export function registerIpcHandlers() {
   ipcMain.handle('ping', () => {
@@ -7,7 +8,6 @@ export function registerIpcHandlers() {
 
   ipcMain.handle('db:init', async () => {
     try {
-      const { initDatabase } = await import('../database/index.js')
       return initDatabase()
     } catch (error) {
       console.error('Database initialization failed:', error)
@@ -16,37 +16,32 @@ export function registerIpcHandlers() {
   })
 
   ipcMain.handle('history:save', async (_event, record) => {
-    const { saveHistory } = await import('../database/index.js')
+    console.log('handlers: history:save 被调用', record)
     return saveHistory(record)
   })
 
   ipcMain.handle('history:getAll', async (_event, params) => {
-    const { getAllHistory } = await import('../database/index.js')
+    console.log('handlers: history:getAll 被调用', params)
     return getAllHistory(params?.limit, params?.offset)
   })
 
   ipcMain.handle('history:delete', async (_event, { ids }) => {
-    const { deleteHistory } = await import('../database/index.js')
     return deleteHistory(ids)
   })
 
   ipcMain.handle('history:clear', async () => {
-    const { clearHistory } = await import('../database/index.js')
     return clearHistory()
   })
 
   ipcMain.handle('favorites:save', async (_event, record) => {
-    const { saveFavorite } = await import('../database/index.js')
     return saveFavorite(record)
   })
 
   ipcMain.handle('favorites:getAll', async (_event, params) => {
-    const { getAllFavorites } = await import('../database/index.js')
     return getAllFavorites(params?.tool_type)
   })
 
   ipcMain.handle('favorites:delete', async (_event, { id }) => {
-    const { deleteFavorite } = await import('../database/index.js')
     return deleteFavorite(id)
   })
 }

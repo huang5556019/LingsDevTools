@@ -15,7 +15,7 @@ function createWindow() {
       minWidth: 800,
       minHeight: 600,
       webPreferences: {
-        preload: path.join(__dirname, '../preload/index.js'),
+        preload: path.join(__dirname, '../preload/index.mjs'),
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: false,
@@ -58,7 +58,6 @@ app.on('window-all-closed', () => {
   }
 })
 
-// IPC 通信示例
-ipcMain.handle('ping', () => 'pong')
+
 
 export { mainWindow }

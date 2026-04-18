@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useEncoderStore } from '../../../store/encoderStore';
+import { useHistoryStore } from '../../../store';
 import { urlEncode, urlDecode } from '../utils/url';
 
 const UrlTool: React.FC = () => {
   const { setToolState, getToolState } = useEncoderStore();
+  const { saveHistory } = useHistoryStore();
   const toolState = getToolState('url');
   const [input, setInput] = useState(toolState.input);
   const [output, setOutput] = useState(toolState.output);
@@ -44,9 +46,16 @@ const UrlTool: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
-    // 这里可以集成历史记录保存功能
-    console.log('保存到历史记录:', { input, output, operation });
+  const handleSave = async () => {
+    if (!input.trim()) {
+      alert('请输入要处理的 URL');
+      return;
+    }
+    await saveHistory({
+      tool_type: 'url',
+      input: JSON.stringify({ input, mode: operation }),
+      output: output,
+    });
     alert('保存成功！');
   };
 

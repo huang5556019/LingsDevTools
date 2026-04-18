@@ -22,6 +22,11 @@ interface HistorySaveResult {
   error?: string
 }
 
+interface DatabaseInitResult {
+  success: boolean
+  error?: string
+}
+
 interface HistoryGetResult {
   success: boolean
   data: HistoryRecord[]
@@ -52,7 +57,7 @@ interface FavoriteDeleteResult {
 
 export interface ElectronAPI {
   ping: () => Promise<string>
-  initDatabase: () => Promise<boolean>
+  initDatabase: () => Promise<DatabaseInitResult>
   onDatabaseError: (callback: (event: IpcRendererEvent, error: string) => void) => () => void
   saveHistory: (record: HistoryRecord) => Promise<HistorySaveResult>
   getAllHistory: (params?: { limit?: number; offset?: number }) => Promise<HistoryGetResult>
