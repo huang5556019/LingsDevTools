@@ -14,7 +14,6 @@ target:
 # Windows 配置
 win:
   target: nsis
-  icon: resources/icons/app.ico
   publisherName: DevTools Team
   legalTrademarks: DevTools
   artifactName: ${productName}-${version}-${os}-${arch}.${ext}
@@ -22,7 +21,6 @@ win:
 # macOS 配置
 mac:
   target: dmg
-  icon: resources/icons/app.icns
   category: public.app-category.developer-tools
   identity: null
   artifactName: ${productName}-${version}-${os}-${arch}.${ext}
@@ -49,9 +47,6 @@ nsis:
   perMachine: false
   allowElevation: true
   allowToChangeInstallationDirectory: true
-  installerIcon: resources/icons/app.ico
-  uninstallerIcon: resources/icons/app.ico
-  installerHeaderIcon: resources/icons/app.ico
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: DevTools
@@ -70,6 +65,5 @@ dmg:
   window:
     width: 540
     height: 380
-  icon: resources/icons/app.icns
 
 
