@@ -9,7 +9,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
-    "build:win": "electron-builder --win",
+    "build:win": "electron-builder --win --publish never",
     "build:mac": "electron-builder --mac --publish never",
     "build:all": "electron-builder --win --mac",
     "lint": "eslint . --ext .ts,.tsx",
