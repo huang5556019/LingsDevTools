@@ -29,7 +29,6 @@ mac:
 # 目录配置
 directories:
   output: dist/build
-  buildResources: resources
 
 # 文件配置
 files:
